@@ -1,3 +1,9 @@
+interface UserInputConfig {
+  title: string,
+  people: number,
+  description: string,
+};
+
 function autobind (
   _target: any,
   _methodName: string,
@@ -12,7 +18,6 @@ function autobind (
   };
   return adjDescriptor;
 };
-
 
 class ProjectForm {
   hostElement: HTMLDivElement;
@@ -38,9 +43,31 @@ class ProjectForm {
     this.initHandler();
   }
 
+  private clearInput(): void {
+    this.titleInputElement.value = '';
+    this.peopleInputElement.value = '';
+    this.descInputElement.value = '';
+  }
+
+  private getUserInputConfig(): UserInputConfig | void {
+    const title = this.titleInputElement.value;
+    const people = this.peopleInputElement.value;
+    const description = this.descInputElement.value;
+
+    const isValid = title.trim().length !== 0
+      && people.trim().length !== 0
+      && description.trim().length !== 0;
+
+    return isValid
+      ? { title, description, people: +people, }
+      : alert('Invalid input, try again!');
+  }
+
   @autobind
   private submitHandler(event: Event) {
     event.preventDefault();
+    this.getUserInputConfig();
+    this.clearInput();
   }
 
   private initHandler() {
