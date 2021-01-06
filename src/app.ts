@@ -4,6 +4,42 @@ interface UserInputConfig {
   description: string,
 };
 
+interface ValidatorConfig {
+  value: string | number,
+  required?: boolean,
+  minLength?: number,
+  maxLength?: number,
+  min?: number,
+  max?: number, 
+};
+
+function isInputValid(validatableInput: ValidatorConfig): boolean {
+  const { value } = validatableInput;
+  let isValid = true;
+  
+  if (validatableInput.required) {
+    isValid = isValid && value.toString().trim().length !== 0;
+  }
+
+  if (validatableInput.minLength !== undefined && typeof value === 'string') {
+    isValid = isValid && value.length >= validatableInput.minLength;
+  }
+
+  if (validatableInput.maxLength !== undefined && typeof value === 'string') {
+    isValid = isValid && value.length <= validatableInput.maxLength;
+  }
+
+  if (validatableInput.min !== undefined && typeof value === 'number') {
+    isValid = isValid && value >= validatableInput.min;
+  }
+
+  if (validatableInput.max !== undefined && typeof value === 'number') {
+    isValid = isValid && value <= validatableInput.max;
+  }
+
+  return isValid;
+};
+
 function autobind (
   _target: any,
   _methodName: string,
@@ -54,9 +90,25 @@ class ProjectForm {
     const people = this.peopleInputElement.value;
     const description = this.descInputElement.value;
 
-    const isValid = title.trim().length !== 0
-      && people.trim().length !== 0
-      && description.trim().length !== 0;
+    const isTitleValid = isInputValid({
+      value: title,
+      required: true,
+    });
+
+    const isPeopleValid = isInputValid({
+      value: +people,
+      required: true,
+      min: 1,
+      max: 5,
+    });
+
+    const isDescriptionValid = isInputValid({
+      value: description,
+      required: true,
+      minLength: 5,
+    });
+
+    const isValid = isTitleValid && isPeopleValid && isDescriptionValid;
 
     return isValid
       ? { title, description, people: +people, }
