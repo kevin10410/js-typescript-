@@ -1,3 +1,19 @@
+function autobind (
+  _target: any,
+  _methodName: string,
+  descriptor: PropertyDescriptor,
+) {
+  const originMethod = descriptor.value;
+  const adjDescriptor: PropertyDescriptor = {
+    configurable: true,
+    get() {
+      return originMethod.bind(this);
+    },
+  };
+  return adjDescriptor;
+};
+
+
 class ProjectForm {
   hostElement: HTMLDivElement;
   formElement: HTMLFormElement;
@@ -22,12 +38,13 @@ class ProjectForm {
     this.initHandler();
   }
 
+  @autobind
   private submitHandler(event: Event) {
     event.preventDefault();
   }
 
   private initHandler() {
-    this.formElement.addEventListener('submit', this.submitHandler.bind(this));
+    this.formElement.addEventListener('submit', this.submitHandler); 
   }
 
   private attach() {
