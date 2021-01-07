@@ -55,18 +55,78 @@ function autobind (
   return adjDescriptor;
 };
 
+enum ProjectStatus { Active, Finished }
+type Listener = (projects: Project[]) => void;
+
+class Project {
+  constructor(
+    public id: string,
+    public title: string,
+    public description: string,
+    public people: number,
+    public status: ProjectStatus,
+  ) {}
+}
+
+class ProjectState {
+  private projects: Project[] = [];
+  private listeners: Listener[] = [];
+  private static state: ProjectState;
+
+  static getState() {
+    return this.state
+      ? this.state
+      : new ProjectState();
+  }
+
+  addListener(listener: Listener) {
+    this.listeners.push(listener);
+  }
+
+  addProject(project: UserInputConfig) {
+    const newProject = new Project(
+      Math.random().toString(),
+      project.title,
+      project.description,
+      project.people,
+      ProjectStatus.Active, 
+    );
+
+    this.projects.push(newProject);
+
+    for (const listener of this.listeners) {
+      listener([...this.projects]);
+    }
+  }
+}
+
+const projectState = ProjectState.getState();
+
 class ProjectList {
   hostElement: HTMLDivElement;
-  sectionElement: HTMLSelectElement;
+  sectionElement: HTMLElement;
   templateElement: HTMLTemplateElement;
+  assignedProjects: Project[];
 
   constructor(private type: 'active' | 'finished') {
+    this.assignedProjects = [];
     this.templateElement = <HTMLTemplateElement>document.querySelector('#project-list');
     this.hostElement = <HTMLDivElement>document.querySelector('#app');
 
     const importedNode = document.importNode(this.templateElement.content, true);
-    this.sectionElement = <HTMLSelectElement> importedNode.firstElementChild;
+    this.sectionElement = <HTMLElement> importedNode.firstElementChild;
     this.sectionElement.id = `${this.type}-projects`;
+
+    projectState.addListener((projects: Project[]) => {
+      const matchedProjects = projects.filter(project =>
+        this.type === 'active'
+          ? project.status === ProjectStatus.Active
+          : project.status === ProjectStatus.Finished
+      );
+
+      this.assignedProjects = matchedProjects;
+      this.renderProjects();
+    });
 
     this.attach();
     this.renderList();
@@ -74,6 +134,17 @@ class ProjectList {
 
   private attach() {
     this.hostElement.insertAdjacentElement('beforeend', this.sectionElement);
+  }
+
+  private renderProjects() {
+    const listEl = <HTMLElement> document.getElementById(`${this.type}-project-list`);
+    listEl.innerHTML = '';
+
+    for (const project of this.assignedProjects) {
+      const listItem = document.createElement('li');
+      listItem.textContent = project.title;
+      listEl.appendChild(listItem);
+    }
   }
 
   private renderList() {
@@ -148,8 +219,11 @@ class ProjectForm {
   @autobind
   private submitHandler(event: Event) {
     event.preventDefault();
-    this.getUserInputConfig();
-    this.clearInput();
+    const inputConfig = this.getUserInputConfig();
+    if (inputConfig) {
+      projectState.addProject(inputConfig);
+      this.clearInput();
+    }
   }
 
   private initHandler() {
