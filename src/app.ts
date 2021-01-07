@@ -56,7 +56,16 @@ function autobind (
 };
 
 enum ProjectStatus { Active, Finished }
-type Listener = (projects: Project[]) => void;
+
+type Listener<T> = (projects: T[]) => void;
+
+class State<T> {
+  protected listeners: Listener<T>[] = [];
+
+  addListener(listener: Listener<T>) {
+    this.listeners.push(listener);
+  }
+}
 
 class Project {
   constructor(
@@ -68,19 +77,18 @@ class Project {
   ) {}
 }
 
-class ProjectState {
+class ProjectState extends State<Project>{
   private projects: Project[] = [];
-  private listeners: Listener[] = [];
   private static state: ProjectState;
+
+  constructor() {
+    super();
+  } 
 
   static getState() {
     return this.state
       ? this.state
       : new ProjectState();
-  }
-
-  addListener(listener: Listener) {
-    this.listeners.push(listener);
   }
 
   addProject(project: UserInputConfig) {
