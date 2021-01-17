@@ -1,5 +1,5 @@
-import { Component } from '../components/base-component.js';
-import { Project } from '../model/project-model.js';
+import { Component } from '../components/base-component';
+import { Project } from '../model/project-model';
 export class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
   private project: Project;
 

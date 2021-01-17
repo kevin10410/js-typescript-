@@ -1,4 +1,4 @@
-import { ValidatorConfig } from '../interface/configs.js';
+import { ValidatorConfig } from '../interface/configs';
 
 export function isInputValid(validatableInput: ValidatorConfig): boolean {
   const { value } = validatableInput;

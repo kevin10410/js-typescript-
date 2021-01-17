@@ -1,5 +1,5 @@
-import { UserInputConfig } from '../interface/configs.js';
-import { Project, ProjectStatus } from '../model/project-model.js';
+import { UserInputConfig } from '../interface/configs';
+import { Project, ProjectStatus } from '../model/project-model';
 
 type Listener<T> = (projects: T[]) => void;
 
